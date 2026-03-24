@@ -22,7 +22,7 @@ class GerenteServicio(BaseTable, table=True):
     servicio_id: UUID = Field(foreign_key="servicio.id")
 
     gerente: Gerente = Relationship(back_populates="gerente_servicios")
-    servicio: Servicio = Relationship(back_populates="gerente_servicios")
+    servicio: "Servicio" = Relationship(back_populates="gerente_servicios")
     tickets_ecosistema: list["TicketEcosistema"] = Relationship(
         back_populates="gerente_servicio"
     )    

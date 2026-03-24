@@ -13,12 +13,12 @@ class Device(BaseTable, table=True):
     mac: str | None = Field(default=None, unique=True)
     activo: bool = Field(default=True, alias="is_active")
 
-    dispositivo_servicios: list["DeviceService"] = Relationship(
+    dispositivo_servicios: list["DispositivoServicio"] = Relationship(
         back_populates="dispositivo"
     )
 
 
-class DeviceService(BaseTable, table=True):
+class DispositivoServicio(BaseTable, table=True):
     __tablename__ = "dispositivo_servicio"
 
     dispositivo_id: UUID = Field(foreign_key="dispositivo.id")
