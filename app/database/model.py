@@ -1,6 +1,9 @@
 from typing import Optional
 from uuid import UUID
 from app.shared.base_domain.model import BaseTable
+from datetime import datetime
+from sqlmodel import Field, Relationship, SQLModel
+from app.database.format import UserPlainAttribute
 
 class DatosPersonalesNoCriticos(BaseTable, table=True):
     __tablename__ = "datos_personales_no_criticos"
@@ -42,7 +45,7 @@ class DatosSensibles(BaseTable, table=True):
     usuario: Optional["Usuario"] = Relationship(back_populates="datos_sensibles")
 
 
-class Administrador(BaseTable, table=True):
+class Administrador(BaseTable, UserPlainAttribute, table=True):
     __tablename__ = "administrador"
 
     datos_sensibles_id: UUID = Field(foreign_key="datos_sensibles.id", unique=True)
@@ -58,7 +61,7 @@ class Administrador(BaseTable, table=True):
     )
 
 
-class Gerente(BaseTable, table=True):
+class Gerente(BaseTable, UserPlainAttribute, table=True):
     __tablename__ = "gerente"
 
     datos_sensibles_id: UUID = Field(foreign_key="datos_sensibles.id", unique=True)
@@ -68,7 +71,7 @@ class Gerente(BaseTable, table=True):
     gerente_servicios: list["GerenteServicio"] = Relationship(back_populates="gerente")
 
 
-class Usuario(BaseTable, table=True):
+class Usuario(BaseTable, UserPlainAttribute, table=True):
     __tablename__ = "usuario"
 
     datos_sensibles_id: UUID = Field(foreign_key="datos_sensibles.id", unique=True)
