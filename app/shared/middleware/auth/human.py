@@ -80,7 +80,6 @@ class Human(BaseHTTPMiddleware):
                         content={"detail": "Token account does not exist"},
                     )
 
-                # Ojo: si is_active en tu modelo es property derivada y falla, quita este bloque
                 if hasattr(account, "is_active") and not account.is_active:
                     return JSONResponse(
                         status_code=status.HTTP_401_UNAUTHORIZED,
