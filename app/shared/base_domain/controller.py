@@ -1,25 +1,23 @@
 from abc import ABC
-from typing import Type, TypeVar
+from enum import Enum
+from typing import Type
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel
 
-from app.shared.base_domain.service import IBaseService
 from app.shared.pagination import PageParams, PageResponse
-
-S = TypeVar("S", bound=IBaseService)
+from typing import Any, ClassVar
 
 
 class BaseApiController(ABC):
-    service_dep: S
-
+    service_dep: ClassVar[Any]  # Annotated[ConcreteService, Depends(get_service)]
     response_schema: Type[BaseModel]
     create_schema: Type[BaseModel] | None = None
     update_schema: Type[BaseModel] | None = None
 
     prefix: str
-    tags: list[str] | None = None
+    tags: list[str | Enum] | None = None
 
     router_dependencies: list | None = None
     list_dependencies: list | None = None
@@ -86,7 +84,9 @@ class FullCrudApiController(ImmutableApiController):
     def _register_routes(self):
         super()._register_routes()
 
-        def update(service: self.service_dep, resource_id: UUID, payload: self.update_schema):
+        def update(
+            service: self.service_dep, resource_id: UUID, payload: self.update_schema
+        ):
             return service.update_entity(resource_id, payload)
 
         self.router.add_api_route(
@@ -98,8 +98,7 @@ class FullCrudApiController(ImmutableApiController):
         )
 
         def delete(service: self.service_dep, resource_id: UUID):
-            if not service.delete_entity(resource_id):
-                raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+            service.delete_entity(resource_id)
 
         self.router.add_api_route(
             "/{resource_id}",

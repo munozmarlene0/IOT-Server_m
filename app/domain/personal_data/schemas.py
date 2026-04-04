@@ -5,7 +5,7 @@ from uuid import UUID
 
 
 class NonCriticalPersonalDataCreate(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     first_name: str = Field(min_length=2, max_length=60)
     last_name: str = Field(min_length=2, max_length=60)
@@ -26,7 +26,7 @@ class NonCriticalPersonalDataCreate(BaseModel):
 
 
 class NonCriticalPersonalDataUpdate(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     first_name: str | None = Field(default=None, min_length=2, max_length=60)
     last_name: str | None = Field(default=None, min_length=2, max_length=60)
@@ -55,7 +55,7 @@ class NonCriticalPersonalDataResponse(BaseSchemaResponse):
 
 
 class SensitiveDataCreate(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     non_critical_data_id: UUID | None = None
     email: str = Field(min_length=6, max_length=254)
@@ -78,7 +78,7 @@ class SensitiveDataCreate(BaseModel):
 
 
 class SensitiveDataUpdate(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     non_critical_data_id: UUID | None = None
     email: str | None = Field(default=None, min_length=6, max_length=254)
@@ -105,8 +105,9 @@ class SensitiveDataUpdate(BaseModel):
 
 
 class PersonalDataCreate(NonCriticalPersonalDataCreate, SensitiveDataCreate):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     sensitive_data_id: UUID | None = None
 
 
 class PersonalDataUpdate(NonCriticalPersonalDataUpdate, SensitiveDataUpdate):
-    pass
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)

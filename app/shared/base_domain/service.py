@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import ClassVar, Generic, TypeVar
 from uuid import UUID
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -17,29 +17,24 @@ class IBaseService(ABC, Generic[T, P_create, P_update]):
     entity_name: str
 
     @abstractmethod
-    def get_by_id(self, id: UUID) -> T:
-        raise NotImplementedError
+    def get_by_id(self, id: UUID) -> T: ...
 
     @abstractmethod
-    def get_all(self, offset: int = 0, limit: int = 20) -> PageResponse[T]:
-        raise NotImplementedError
+    def get_all(self, offset: int = 0, limit: int = 20) -> PageResponse[T]: ...
 
     @abstractmethod
-    def create_entity(self, payload: P_create) -> T:
-        raise NotImplementedError
+    def create_entity(self, payload: P_create) -> T: ...
 
     @abstractmethod
-    def update_entity(self, id: UUID, payload: P_update) -> T:
-        raise NotImplementedError
+    def update_entity(self, id: UUID, payload: P_update) -> T: ...
 
     @abstractmethod
-    def delete_entity(self, id: UUID) -> bool:
-        raise NotImplementedError
+    def delete_entity(self, id: UUID) -> None: ...
 
 
 class BaseService(IBaseService[T, P_create, P_update], Generic[T, P_create, P_update]):
     entity_name: str = "Entidad"
-    repository_class: type[BaseRepository] = None
+    repository_class: ClassVar[type[BaseRepository]]
 
     def __init__(self, session: Session):
         self.repository: IBaseRepository[T] = self.repository_class(session)
@@ -59,24 +54,12 @@ class BaseService(IBaseService[T, P_create, P_update], Generic[T, P_create, P_up
 
     def update_entity(self, id: UUID, payload: P_update) -> T:
         entity = self.get_by_id(id)
-
-        for field, value in payload.model_dump(exclude_unset=True).items():
-            attr = getattr(type(entity), field, None)
-
-            # Si es una property sin setter (solo lectura), se omite.
-            if isinstance(attr, property) and attr.fset is None:
-                continue
-
-            setattr(entity, field, value)
-
+        entity.sqlmodel_update(payload.model_dump(exclude_unset=True))
         return self.repository.update(entity)
 
-    def delete_entity(self, id: UUID) -> bool:
-        entity = self.repository.get_by_id(id)
-        if not entity:
-            return False
+    def delete_entity(self, id: UUID) -> None:
+        entity = self.get_by_id(id)
         self.repository.delete(entity)
-        return True
 
-    def _build_entity(self, payload: P_create | P_update) -> T:
-        return self.repository.model(**payload.model_dump())
+    def _build_entity(self, payload: P_create) -> T:
+        return self.repository.model(**payload.model_dump(exclude_none=True))

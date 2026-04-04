@@ -117,9 +117,8 @@ class TestAdministratorRetrieve:
     ):
         """Test retrieving a non-existent administrator."""
         token = create_token(master_admin_account)
-        fake_id = uuid4()
         response = client.get(
-            f"/api/v1/administrators/{fake_id}",
+            f"/api/v1/administrators/{uuid4()}",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 404
@@ -136,7 +135,10 @@ class TestAdministratorRetrieve:
         assert response.status_code == 422
 
     def test_retrieve_administrator_as_regular_admin_forbidden(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
     ):
         """Test retrieving administrator as regular admin."""
         token = create_token(regular_admin_account)
@@ -182,7 +184,10 @@ class TestAdministratorCreate:
         assert data["is_active"] is True
 
     def test_create_administrator_duplicate_email(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
     ):
         """Test creating administrator with duplicate email."""
         token = create_token(master_admin_account)
@@ -437,90 +442,120 @@ class TestAdministratorCreate:
 class TestAdministratorUpdate:
     """Test PATCH /administrators/{id} endpoint."""
 
-    def test_update_administrator_full(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
-    ):
-        """Test updating administrator with all fields."""
-        token = create_token(master_admin_account)
-        update_data = {
-            "first_name": "UpdatedName",
-            "last_name": "UpdatedLast",
-            "phone": "+523312345777",
-        }
-        response = client.patch(
-            f"/api/v1/administrators/{regular_admin_account['id']}",
-            json=update_data,
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data["first_name"] == "Admin"
-
     def test_update_administrator_partial(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
     ):
-        """Test updating administrator with partial fields."""
+        """Test updating administrator with partial fields actually persists changes."""
         token = create_token(master_admin_account)
-        update_data = {"first_name": "PartialUpdate"}
+
         response = client.patch(
             f"/api/v1/administrators/{regular_admin_account['id']}",
-            json=update_data,
+            json={"first_name": "PartialUpdate"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        print(response.json())
+        assert response.status_code == 200
+
+        get_response = client.get(
+            f"/api/v1/administrators/{regular_admin_account['id']}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert get_response.status_code == 200
+        assert get_response.json()["first_name"] == "PartialUpdate"
+
+    def test_update_administrator_full(
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
+    ):
+        """Test updating multiple fields at once and verifying persistence."""
+        token = create_token(master_admin_account)
+
+        response = client.patch(
+            f"/api/v1/administrators/{regular_admin_account['id']}",
+            json={
+                "first_name": "UpdatedName",
+                "last_name": "UpdatedLast",
+                "phone": "+523312345777",
+            },
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 200
-        data = response.json()
-        assert data["first_name"] == "Admin"
+
+        get_response = client.get(
+            f"/api/v1/administrators/{regular_admin_account['id']}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert get_response.status_code == 200
+        data = get_response.json()
+        assert data["first_name"] == "UpdatedName"
+        assert data["last_name"] == "UpdatedLast"
+
+    def test_update_administrator_deactivate(
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
+    ):
+        """Test that deactivating an administrator actually persists."""
+        token = create_token(master_admin_account)
+
+        response = client.patch(
+            f"/api/v1/administrators/{regular_admin_account['id']}",
+            json={"is_active": False},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert response.status_code == 200
+
+        get_response = client.get(
+            f"/api/v1/administrators/{regular_admin_account['id']}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert get_response.status_code == 200
+        assert get_response.json()["is_active"] is False
 
     def test_update_administrator_not_found(
         self, client: TestClient, master_admin_account: dict
     ):
         """Test updating non-existent administrator."""
         token = create_token(master_admin_account)
-        fake_id = uuid4()
         response = client.patch(
-            f"/api/v1/administrators/{fake_id}",
-            json={"first_name": "Updated"},
+            f"/api/v1/administrators/{uuid4()}",
+            json={"first_name": "Ghost"},
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 404
 
     def test_update_administrator_invalid_email(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
     ):
         """Test updating administrator with invalid email."""
         token = create_token(master_admin_account)
-        update_data = {"email": "@"}
         response = client.patch(
             f"/api/v1/administrators/{regular_admin_account['id']}",
-            json=update_data,
+            json={"email": "@"},
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 422
 
-    def test_update_administrator_deactivate(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
-    ):
-        """Test deactivating an administrator."""
-        token = create_token(master_admin_account)
-        update_data = {"is_active": False}
-        response = client.patch(
-            f"/api/v1/administrators/{regular_admin_account['id']}",
-            json=update_data,
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data["is_active"] is True
-
     def test_update_administrator_as_regular_admin_forbidden(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
     ):
         """Test updating administrator as regular admin."""
         token = create_token(regular_admin_account)
-        update_data = {"first_name": "Hacker"}
         response = client.patch(
             f"/api/v1/administrators/{master_admin_account['id']}",
-            json=update_data,
+            json={"first_name": "Hacker"},
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 403
@@ -529,68 +564,125 @@ class TestAdministratorUpdate:
 class TestAdministratorDelete:
     """Test DELETE /administrators/{id} endpoint."""
 
-    def test_delete_administrator_as_master_admin(
-        self, client: TestClient, master_admin_account: dict, session
-    ):
-        """Test deleting an administrator as master admin."""
-        from app.database.model import NonCriticalPersonalData, SensitiveData, Administrator
+    @pytest.fixture
+    def deletable_admin(self, session):
+        """Fixture que crea un admin limpio listo para ser eliminado."""
+        from app.database.model import (
+            NonCriticalPersonalData,
+            SensitiveData,
+            Administrator,
+        )
         from app.domain.auth.security import get_password_hash
 
-        # Create an admin to delete
-        non_critical_data = NonCriticalPersonalData(
+        non_critical = NonCriticalPersonalData(
             first_name="ToDelete",
             last_name="Admin",
             second_last_name="Test",
             phone="+523312345790",
-            address="Delete St",
+            address="Delete St 123",
             city="Mexico City",
             state="Mexico",
             postal_code="06505",
             birth_date=datetime(1991, 7, 10),
-            is_active=True,
         )
-        session.add(non_critical_data)
+        session.add(non_critical)
         session.flush()
 
-        sensitive_data = SensitiveData(
-            non_critical_data_id=non_critical_data.id,
+        sensitive = SensitiveData(
+            non_critical_data_id=non_critical.id,
             email="todelete@test.com",
             password_hash=get_password_hash("DeletePass123!"),
             curp="DELT111111HDFRRL09",
             rfc="DELT111111AB0",
         )
-        session.add(sensitive_data)
+        session.add(sensitive)
         session.flush()
 
-        admin_to_delete = Administrator(
-            sensitive_data_id=sensitive_data.id,
+        admin = Administrator(
+            sensitive_data_id=sensitive.id,
             is_master=False,
-            is_active=True,
         )
-        session.add(admin_to_delete)
+        session.add(admin)
         session.commit()
 
+        return {
+            "admin_id": admin.id,
+            "sensitive_id": sensitive.id,
+            "non_critical_id": non_critical.id,
+        }
+
+    def test_delete_administrator_returns_204(
+        self, client: TestClient, master_admin_account: dict, deletable_admin: dict
+    ):
+        """Test que el endpoint retorna 204 al eliminar correctamente."""
         token = create_token(master_admin_account)
         response = client.delete(
-            f"/api/v1/administrators/{admin_to_delete.id}",
+            f"/api/v1/administrators/{deletable_admin['admin_id']}",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 204
+
+    def test_delete_administrator_is_gone_after_deletion(
+        self, client: TestClient, master_admin_account: dict, deletable_admin: dict
+    ):
+        """Test que el admin ya no es recuperable tras ser eliminado."""
+        token = create_token(master_admin_account)
+
+        client.delete(
+            f"/api/v1/administrators/{deletable_admin['admin_id']}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        get_response = client.get(
+            f"/api/v1/administrators/{deletable_admin['admin_id']}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert get_response.status_code == 404
+
+    def test_delete_administrator_cascades_related_records(
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        deletable_admin: dict,
+        session,
+    ):
+        """Test que borrar un admin elimina también SensitiveData y NonCriticalPersonalData."""
+        from app.database.model import (
+            Administrator,
+            NonCriticalPersonalData,
+            SensitiveData,
+        )
+
+        token = create_token(master_admin_account)
+        client.delete(
+            f"/api/v1/administrators/{deletable_admin['admin_id']}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        session.expire_all()
+        assert session.get(Administrator, deletable_admin["admin_id"]) is None
+        assert session.get(SensitiveData, deletable_admin["sensitive_id"]) is None
+        assert (
+            session.get(NonCriticalPersonalData, deletable_admin["non_critical_id"])
+            is None
+        )
 
     def test_delete_administrator_not_found(
         self, client: TestClient, master_admin_account: dict
     ):
         """Test deleting non-existent administrator."""
         token = create_token(master_admin_account)
-        fake_id = uuid4()
         response = client.delete(
-            f"/api/v1/administrators/{fake_id}",
+            f"/api/v1/administrators/{uuid4()}",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 404
 
     def test_delete_administrator_as_regular_admin_forbidden(
-        self, client: TestClient, master_admin_account: dict, regular_admin_account: dict
+        self,
+        client: TestClient,
+        master_admin_account: dict,
+        regular_admin_account: dict,
     ):
         """Test deleting administrator as regular admin."""
         token = create_token(regular_admin_account)
