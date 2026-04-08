@@ -9,13 +9,11 @@ from app.domain.personal_data.schemas import PersonalDataCreate, PersonalDataUpd
 from app.domain.personal_data.service import PersonalDataService
 
 
-class IUserService(
-    IBaseService[User, PersonalDataCreate, PersonalDataUpdate], ABC
-):
+class IUserService(IBaseService[User, PersonalDataCreate, PersonalDataUpdate], ABC):
     pass
 
 
-class UserService(PersonalDataService, IUserService):
+class UserService(PersonalDataService[User], IUserService):
     entity_name = "User"
     repository_class = UserRepository
 

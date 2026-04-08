@@ -15,7 +15,7 @@ class IManagerService(
     pass
 
 
-class ManagerService(PersonalDataService, IManagerService):
+class ManagerService(PersonalDataService[Manager], IManagerService):
     entity_name = "Manager"
     repository_class = ManagerRepository
 

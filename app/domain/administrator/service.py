@@ -15,7 +15,7 @@ class IAdministratorService(
     pass
 
 
-class AdministratorService(PersonalDataService, IAdministratorService):
+class AdministratorService(PersonalDataService[Administrator], IAdministratorService):
     entity_name = "Administrator"
     repository_class = AdministratorRepository
 

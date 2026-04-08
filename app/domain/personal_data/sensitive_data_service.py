@@ -12,7 +12,7 @@ class ISensitiveDataService(
 
 
 class SensitiveDataService(
-    BaseService[SensitiveData, SensitiveDataCreate, SensitiveDataUpdate], ABC
+    BaseService[SensitiveData, SensitiveDataCreate, SensitiveDataUpdate]
 ):
     entity_name = "SensitiveData"
     repository_class = SensitiveDataRepository
