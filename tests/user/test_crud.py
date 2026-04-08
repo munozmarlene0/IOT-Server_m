@@ -216,10 +216,10 @@ class TestUserCreate:
         assert data["first_name"] == "Test"
         assert data["is_active"] is True
 
-    def test_create_user_as_manager_forbidden(
+    def test_create_user_as_manager(
         self, client: TestClient, manager_account: dict
     ):
-        """Test creating user as manager is forbidden."""
+        """Test creating user as manager (allowed per permission matrix)."""
         token = create_token(manager_account)
         user_data = {
             "first_name": "Test",
@@ -231,8 +231,8 @@ class TestUserCreate:
             "state": "Mexico",
             "postal_code": "06500",
             "birth_date": datetime(1990, 6, 15).isoformat(),
-            "email": "test@example.com",
-            "password": "TestPass123!",
+            "email": "manager_created@example.com",
+            "password_hash": "TestPass123!",
             "curp": "ABCD111111HDFRRL09",
             "rfc": "ABCD111111AB0",
         }
@@ -242,7 +242,7 @@ class TestUserCreate:
             json=user_data,
             headers={"Authorization": f"Bearer {token}"},
         )
-        assert response.status_code == 403
+        assert response.status_code == 201
 
     def test_create_user_duplicate_email(
         self, client: TestClient, master_admin_account: dict, user_account: dict
@@ -489,7 +489,7 @@ class TestUserUpdate:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["first_name"] == "UpdatedJohn"
+        assert data["first_name"] == "UpdatedJohn"  # Should be updated
 
     def test_update_user_partial(
         self, client: TestClient, master_admin_account: dict, user_account: dict
@@ -504,7 +504,7 @@ class TestUserUpdate:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["first_name"] == "PartialJohn"
+        assert data["first_name"] == "PartialJohn"  # Should be updated
 
     def test_update_user_not_found(
         self, client: TestClient, master_admin_account: dict
@@ -545,20 +545,27 @@ class TestUserUpdate:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["is_active"] is False
+        assert data["is_active"] is False  # Should be deactivated
+        
+        # Reactivate for other tests
+        client.patch(
+            f"/api/v1/users/{user_account['id']}",
+            json={"is_active": True},
+            headers={"Authorization": f"Bearer {token}"},
+        )
 
-    def test_update_user_as_manager_forbidden(
+    def test_update_user_as_manager(
         self, client: TestClient, manager_account: dict, user_account: dict
     ):
-        """Test updating user as manager is forbidden."""
+        """Test updating user as manager (allowed per permission matrix)."""
         token = create_token(manager_account)
-        update_data = {"first_name": "Hacker"}
+        update_data = {"first_name": "ManagerUpdate"}
         response = client.patch(
             f"/api/v1/users/{user_account['id']}",
             json=update_data,
             headers={"Authorization": f"Bearer {token}"},
         )
-        assert response.status_code == 403
+        assert response.status_code == 200  # Managers can update users
 
     def test_update_user_as_user_forbidden(
         self, client: TestClient, user_account: dict

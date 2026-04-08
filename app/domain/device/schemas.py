@@ -12,13 +12,13 @@ class DeviceCreate(BaseModel):
 
 
 class DeviceUpdate(BaseModel):
-    name: str | None
-    brand: str | None
-    model: str | None
-    serial_number: str | None
-    ip: str | None
-    mac: str | None
-    is_active: bool | None
+    name: str | None = None
+    brand: str | None = None
+    model: str | None = None
+    serial_number: str | None = None
+    ip: str | None = None
+    mac: str | None = None
+    is_active: bool | None = None
 
 
 class DeviceResponse(BaseSchemaResponse):
