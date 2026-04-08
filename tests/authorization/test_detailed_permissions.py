@@ -138,9 +138,9 @@ class TestRegularAdministratorPermissions:
 
 class TestManagerPermissions:
     
-    def test_can_create_managers(self, oso, manager_user):
+    def test_cannot_create_managers(self, oso, manager_user):
         assert oso.is_allowed(manager_user, "read", Manager)
-        assert oso.is_allowed(manager_user, "write", Manager)
+        assert oso.is_allowed(manager_user, "write", Manager) is False
     
     def test_can_create_users(self, oso, manager_user):
         assert oso.is_allowed(manager_user, "read", User)
@@ -150,8 +150,8 @@ class TestManagerPermissions:
         assert oso.is_allowed(manager_user, "read", Device)
         assert oso.is_allowed(manager_user, "write", Device)
     
-    def test_cannot_delete_devices(self, oso, manager_user):
-        assert oso.is_allowed(manager_user, "delete", Device) is False
+    def test_can_delete_devices(self, oso, manager_user):
+        assert oso.is_allowed(manager_user, "delete", Device)
     
     def test_can_consult_applications(self, oso, manager_user):
         assert oso.is_allowed(manager_user, "read", Application)

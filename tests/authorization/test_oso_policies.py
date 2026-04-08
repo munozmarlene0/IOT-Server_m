@@ -88,8 +88,14 @@ class TestManagerPermissions:
     def test_manager_can_write(self, oso, manager):
         assert oso.is_allowed(manager, "write", Device)
     
-    def test_manager_cannot_delete(self, oso, manager):
-        assert not oso.is_allowed(manager, "delete", Device)
+    def test_manager_can_delete_devices(self, oso, manager):
+        """Manager can delete devices according to permission matrix."""
+        assert oso.is_allowed(manager, "delete", Device)
+    
+    def test_manager_cannot_delete_managers(self, oso, manager):
+        """Manager cannot delete other managers (read-only for Manager resource)."""
+        from app.database.model import Manager as ManagerModel
+        assert not oso.is_allowed(manager, "delete", ManagerModel)
 
 
 class TestRegularUserPermissions:

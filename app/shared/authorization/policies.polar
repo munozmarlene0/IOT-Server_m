@@ -41,9 +41,8 @@ allow(user: CurrentUser, "read", _resource: Administrator) if
     not user.is_master;
 
 # Manager
-allow(user: CurrentUser, action, _resource: Manager) if
-    user.account_type = "manager" and
-    action in ["read", "write"];
+allow(user: CurrentUser, "read", _resource: Manager) if
+    user.account_type = "manager";
 
 allow(user: CurrentUser, action, _resource: User) if
     user.account_type = "manager" and
@@ -51,7 +50,7 @@ allow(user: CurrentUser, action, _resource: User) if
 
 allow(user: CurrentUser, action, _resource: Device) if
     user.account_type = "manager" and
-    action in ["read", "write"];
+    action in ["read", "write", "delete"];
 
 allow(user: CurrentUser, action, _resource: Ticket) if
     user.account_type = "manager" and

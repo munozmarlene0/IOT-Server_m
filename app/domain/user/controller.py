@@ -1,10 +1,9 @@
-from fastapi import Depends
-
 from app.shared.base_domain.controller import FullCrudApiController
 from app.domain.user.schemas import UserResponse
 from app.domain.user.service import UserServiceDep
-from app.domain.auth.service import require_admin, require_admin_or_manager
+from app.shared.authorization.dependencies import require_read, require_write, require_delete
 from app.domain.personal_data.schemas import PersonalDataCreate, PersonalDataUpdate
+from app.database.model import User
 
 
 class UserController(FullCrudApiController):
@@ -16,11 +15,11 @@ class UserController(FullCrudApiController):
     create_schema = PersonalDataCreate
     update_schema = PersonalDataUpdate
 
-    list_dependencies = [Depends(require_admin_or_manager)]
-    retrieve_dependencies = [Depends(require_admin_or_manager)]
-    create_dependencies = [Depends(require_admin)]
-    update_dependencies = [Depends(require_admin)]
-    delete_dependencies = [Depends(require_admin)]
+    list_dependencies = [require_read(User)]
+    retrieve_dependencies = [require_read(User)]
+    create_dependencies = [require_write(User)]
+    update_dependencies = [require_write(User)]
+    delete_dependencies = [require_delete(User)]
 
 
 user_router = UserController().router

@@ -53,7 +53,7 @@ class TestAdministratorList:
             "/api/v1/administrators",
             headers={"Authorization": f"Bearer {token}"},
         )
-        assert response.status_code == 403
+        assert response.status_code == 200  # Regular admins can read administrators
 
     def test_list_administrators_as_user(self, client: TestClient, user_account: dict):
         """Test listing administrators as user."""
@@ -134,19 +134,19 @@ class TestAdministratorRetrieve:
         )
         assert response.status_code == 422
 
-    def test_retrieve_administrator_as_regular_admin_forbidden(
+    def test_retrieve_administrator_as_regular_admin(
         self,
         client: TestClient,
         master_admin_account: dict,
         regular_admin_account: dict,
     ):
-        """Test retrieving administrator as regular admin."""
+        """Test retrieving administrator as regular admin (allowed - can read)."""
         token = create_token(regular_admin_account)
         response = client.get(
             f"/api/v1/administrators/{master_admin_account['id']}",
             headers={"Authorization": f"Bearer {token}"},
         )
-        assert response.status_code == 403
+        assert response.status_code == 200  # Regular admins can read administrators
 
 
 class TestAdministratorCreate:
