@@ -347,7 +347,7 @@ class TestDeviceCreate:
             "model": "ModelY",
             "serial_number": "SN_UNIQUE1",
             "ip": "192.168.1.108",
-            "mac": "MAC_DUPLICATE"
+            "mac": "AA:BB:CC:DD:EE:11"
         }
 
         # Create first device
