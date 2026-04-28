@@ -5,7 +5,7 @@ from uuid import UUID
 from app.database.model import Application
 from app.domain.application.repository import ApplicationRepository
 from app.shared.middleware.auth.auth_rc.application import ApplicationAuth
-from app.shared.middleware.auth.auth_manager.base import AuthManager
+from app.shared.middleware.auth.auth_manager.manager import AuthManager
 
 
 class ApplicationAuthManager(AuthManager[Application]):

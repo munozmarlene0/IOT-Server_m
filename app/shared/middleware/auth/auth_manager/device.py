@@ -5,7 +5,7 @@ from uuid import UUID
 from app.database.model import Device
 from app.domain.device.repository import DeviceRepository
 from app.shared.middleware.auth.auth_rc.device import DeviceAuth
-from app.shared.middleware.auth.auth_manager.base import AuthManager
+from app.shared.middleware.auth.auth_manager.manager import AuthManager
 
 
 class DeviceAuthManager(AuthManager[Device]):
