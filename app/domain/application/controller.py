@@ -6,6 +6,8 @@ from app.database import SessionDep
 from app.shared.middleware.auth.applications.auth import CryptoManager
 from app.shared.session.service import SessionService
 from app.config import settings
+from app.shared.authorization.dependencies import require_read, require_write, require_delete  # nuevo
+from app.database.model import Application  # nuevo
 
 
 class ApplicationController(FullCrudApiController):
@@ -15,6 +17,13 @@ class ApplicationController(FullCrudApiController):
     response_schema = ApplicationResponse
     create_schema = ApplicationCreate
     update_schema = ApplicationUpdate
+
+    # nuevo
+    list_dependencies = [require_read(Application)]
+    retrieve_dependencies = [require_read(Application)]
+    create_dependencies = [require_write(Application)]
+    update_dependencies = [require_write(Application)]
+    delete_dependencies = [require_delete(Application)]
 
 
 application_router = ApplicationController().router
