@@ -17,7 +17,7 @@ from app.database.model import (
     User,
     Manager,
 )
-from app.domain.auth.security import get_password_hash
+from app.shared.auth.security import get_password_hash
 from copy import deepcopy
 
 

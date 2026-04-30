@@ -677,7 +677,7 @@ class TestAdministratorDelete:
             SensitiveData,
             Administrator,
         )
-        from app.domain.auth.security import get_password_hash
+        from app.shared.auth.security import get_password_hash
 
         non_critical = NonCriticalPersonalData(
             first_name="ToDelete",

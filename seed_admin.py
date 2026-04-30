@@ -1,12 +1,16 @@
 """
 Script para crear un administrador master inicial.
-Uso: uv run python seed_admin.py
+
+Uso:
+    uv run python seed_admin.py
 """
+
 from sqlmodel import Session, select
 
 from app.database import engine
 from app.database.model import Administrator, NonCriticalPersonalData, SensitiveData
-from app.domain.auth.security import get_password_hash
+from app.shared.auth.security import get_password_hash
+
 
 EMAIL = "admin@iot.com"
 PASSWORD = "Admin1234!"
@@ -16,10 +20,10 @@ LAST_NAME = "Master"
 
 def create_initial_admin() -> None:
     with Session(engine) as session:
-        # Verificar si ya existe
         existing = session.exec(
             select(SensitiveData).where(SensitiveData.email == EMAIL)
         ).first()
+
         if existing:
             print(f"Ya existe un usuario con el email '{EMAIL}', no se creó nada.")
             return
@@ -29,7 +33,7 @@ def create_initial_admin() -> None:
             last_name=LAST_NAME,
         )
         session.add(personal_data)
-        session.flush()  # obtener el id antes del commit
+        session.flush()
 
         sensitive_data = SensitiveData(
             non_critical_data_id=personal_data.id,
@@ -42,6 +46,7 @@ def create_initial_admin() -> None:
         admin = Administrator(
             sensitive_data_id=sensitive_data.id,
             is_master=True,
+            is_active=True,
         )
         session.add(admin)
         session.commit()

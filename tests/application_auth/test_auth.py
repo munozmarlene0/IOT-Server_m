@@ -152,7 +152,7 @@ def admin_for_app(db):
     """Crear un administrator para asociar a las applications."""
     from sqlmodel import Session as SqlSession
     from app.database.model import NonCriticalPersonalData, SensitiveData
-    from app.domain.auth.security import get_password_hash
+    from app.shared.auth.security import get_password_hash
     from datetime import datetime
 
     with SqlSession(db) as session:

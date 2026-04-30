@@ -680,7 +680,7 @@ class TestUserDelete:
     ):
         """Test deleting a user as admin."""
         from app.database.model import NonCriticalPersonalData, SensitiveData, User
-        from app.domain.auth.security import get_password_hash
+        from app.shared.auth.security import get_password_hash
 
         non_critical_data = NonCriticalPersonalData(
             first_name="ToDelete",
