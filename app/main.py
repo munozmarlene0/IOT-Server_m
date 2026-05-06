@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.config import settings
 from app.database import create_db_and_tables
+from app.shared.logging import init_logging
 from app.domain.auth.controller import auth_router
 from app.domain.device.controller import device_router
 from app.domain.user.controller import user_router
@@ -18,6 +19,7 @@ from app.shared.middleware.auth.human import Human
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    init_logging(debug=settings.DEBUG)
     create_db_and_tables()
     yield
 
@@ -28,6 +30,8 @@ app = FastAPI(
     debug=settings.DEBUG,
     lifespan=lifespan,
 )
+
+app.add_middleware(Human)
 
 app.add_middleware(Human)
 

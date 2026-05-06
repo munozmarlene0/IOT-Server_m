@@ -340,7 +340,7 @@ class ServiceTicket(BaseTable, table=True):
 
 
 class EcosystemTicket(BaseTable, table=True):
-    __tablename__ = "ecosystem_ticket"  # pyright: ignore[reportAssignmentType]
+    __tablename__ = "ecosystem_ticket"
 
     title: str
     description: str | None = None
@@ -356,3 +356,15 @@ class EcosystemTicket(BaseTable, table=True):
         back_populates="ecosystem_tickets",
         sa_relationship_kwargs={"lazy": "selectin"},
     )
+
+
+class AuditLog(BaseTable, table=True):
+    __tablename__ = "audit_log"
+
+    account_id: UUID
+    account_type: str
+    action: str
+    resource_type: str
+    resource_id: UUID | None = None
+    details: str | None = None
+    ip_address: str | None = None
